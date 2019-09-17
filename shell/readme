@@ -1,0 +1,68 @@
+README
+
+Eric Gurevich's Super Cool Shell That Works 90% Of The Time!
+
+Basic functionality: Enter internal or external commands at prompt. Expect something to
+happen (usually prints result to your console).
+
+	(How did I implement?): Parse stdin with a pointer until we reach \n. Replace with 
+	null terminator. Return line.
+	
+	Loop shell forever, until we input quit or ^D. While looping, get the line. Parse it
+	into an array of arguments via strtok. Evaluate that array of arguments. If it's an 
+	argument, hunt down the path in PATH environment variable, concatenate, try to fork and exec.
+
+Builtin Commands:
+	*quit: Quit.
+
+	*cd [optional: directory]: If no arguments, prints current diretory, if argument
+	change to that directory.
+	
+	*clr: Clears screen by adding a bunch of \n's.
+	
+	*dir [required: directory]: Lists content of directory. Put '.' to use current
+	directory.
+	
+	*environ: Prints all environment variables.
+	
+	*echo [required: text] Prints text to screen.
+	
+	*help: Displays this manual.
+	
+	*pause: Pauses the shell until enter is hit.
+
+
+Advanced functionality: 
+	*Run from batchfile: When starting shell, add filename of your batchfile to 
+	arguments. The shell will execute from the commands in the file. 
+	
+	(How did I implement?): Check argc > 1. Dup2 batch file to stdin. 
+
+	*Background: Input '&' after any set of commands to run in background. This
+	means the shell will continue running in the foreground. Sometimes if
+	the command produces no output to stdout, you won't know it ran at all...spooky...
+	
+	(How did I implement?): Check for '&' at end of arguments. If so, fork,
+	exec, don't wait on child process.
+	
+	*Pipes: Input '|' between two commands to have output of cmd1 redirect to input of cmd2.
+	By far the least reliable component of my shell. Officially only supports external 
+	commands, and even then is very finicky... 
+	(e.g.) ls | cat works
+	cat readme.txt | wc -l doesn't. I don't know why. 
+	
+	(How did I implement?): Pipe file descriptor int array fd[2]. Fork two children.
+	In one child, close read end, and dup2 stdout with write end. In other child,
+	close write end, dup2 stdin with read end.
+	
+	*Redirects: Input '<' [file] after commands to run command with input from a file.
+	Input '>' [file] after commands to run command with output to a file.
+	You can do both, but make sure < comes before >. 
+	
+	(How did I implement?):  Check for < and >. Fork, in child, dup2 infile to stdin,
+	dup2 outfile to stdout if necessary. 
+	
+Testing methods:
+	If the tested functionality worked as expected, it passed my test. Lots of printf
+	debugging (also fprintf to stdout someetimes). Occasional debugging with Eclipse to 
+	find where program crashed and stuff. 
